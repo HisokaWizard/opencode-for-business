@@ -63,7 +63,7 @@ async function main() {
 
   // We run the build script. Note: This might take a while.
   // Use 'bun' directly on the file path, not 'bun run' (which looks for package.json scripts)
-  await $`bun ${buildScript} --skip-install`.cwd(PROJECT_ROOT);
+  await $`bun ${buildScript}`.cwd(PROJECT_ROOT);
 
   // Copy binaries
   console.log("Copying binaries...");
@@ -114,7 +114,10 @@ async function main() {
   console.log("Copying install scripts...");
   const scriptDir = __dirname;
   if (fs.existsSync(path.join(scriptDir, "install.sh"))) {
-    fs.copyFileSync(path.join(scriptDir, "install.sh"), path.join(BUNDLE_DIR, "install.sh"));
+    // Read file and convert CRLF to LF for Linux/macOS compatibility
+    const content = fs.readFileSync(path.join(scriptDir, "install.sh"), "utf-8");
+    const lfContent = content.replace(/\r\n/g, "\n");
+    fs.writeFileSync(path.join(BUNDLE_DIR, "install.sh"), lfContent);
   }
   if (fs.existsSync(path.join(scriptDir, "install.bat"))) {
     fs.copyFileSync(path.join(scriptDir, "install.bat"), path.join(BUNDLE_DIR, "install.bat"));
