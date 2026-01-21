@@ -1,4 +1,6 @@
 import z from "zod"
+import { Config } from "../config/config"
+import { NetworkPolicy } from "../security/network"
 import { Tool } from "./tool"
 import DESCRIPTION from "./websearch.txt"
 
@@ -62,6 +64,8 @@ export const WebSearchTool = Tool.define("websearch", async () => {
         .describe("Maximum characters for context string optimized for LLMs (default: 10000)"),
     }),
     async execute(params, ctx) {
+      await NetworkPolicy.checkAccess(API_CONFIG.BASE_URL)
+
       await ctx.ask({
         permission: "websearch",
         patterns: [params.query],

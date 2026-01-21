@@ -28,6 +28,7 @@ import { existsSync } from "fs"
 import { Bus } from "@/bus"
 import { GlobalBus } from "@/bus/global"
 import { Event } from "../server/event"
+import { NetworkPolicy } from "../security/network"
 
 export namespace Config {
   const log = Log.create({ service: "config" })
@@ -132,9 +133,12 @@ export namespace Config {
         }
       }
 
-      const exists = existsSync(path.join(dir, "node_modules"))
-      const installing = installDependencies(dir)
-      if (!exists) await installing
+      const allowed = await NetworkPolicy.isAccessAllowed("https://registry.npmjs.org", result)
+      if (allowed) {
+        const exists = existsSync(path.join(dir, "node_modules"))
+        const installing = installDependencies(dir)
+        if (!exists) await installing
+      }
 
       result.command = mergeDeep(result.command ?? {}, await loadCommand(dir))
       result.agent = mergeDeep(result.agent, await loadAgent(dir))
@@ -917,6 +921,7 @@ export namespace Config {
         .optional()
         .describe("When set, ONLY these providers will be enabled. All other providers will be ignored"),
       model: z.string().describe("Model to use in the format of provider/model, eg anthropic/claude-2").optional(),
+      fallback_model: z.string().optional().describe("Fallback model to use if the primary model fails"),
       small_model: z
         .string()
         .describe("Small model to use for tasks like title generation in the format of provider/model")
@@ -1032,6 +1037,15 @@ export namespace Config {
           url: z.string().optional().describe("Enterprise URL"),
         })
         .optional(),
+      fallback_model: z.string().optional().describe("Model to use when the primary model fails"),
+      network: z
+        .object({
+          policy: z.enum(["allow-all", "deny-all", "whitelist"]).default("deny-all").describe("Network access policy"),
+          whitelist: z.array(z.string()).default([]).describe("List of allowed domains for whitelist policy"),
+          proxy: z.string().optional().describe("Proxy URL for network requests"),
+        })
+        .default({})
+        .describe("Network configuration and security policies"),
       compaction: z
         .object({
           auto: z.boolean().optional().describe("Enable automatic compaction when context is full (default: true)"),

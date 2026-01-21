@@ -46,6 +46,51 @@ export namespace LLM {
   export type StreamOutput = StreamTextResult<ToolSet, unknown>
 
   export async function stream(input: StreamInput) {
+    const cfg = await Config.get()
+
+    try {
+      return await _stream(input, cfg)
+    } catch (error) {
+      if (!cfg.fallback_model) {
+        throw error
+      }
+
+      const { providerID, modelID } = Provider.parseModel(cfg.fallback_model)
+
+      // Prevent infinite loops if the current model is already the fallback model
+      if (input.model.providerID === providerID && input.model.id === modelID) {
+        log.warn("Fallback model failed (same as primary)", {
+          model: input.model.id,
+          error,
+        })
+        throw error
+      }
+
+      log.warn("stream failed, attempting fallback", {
+        model: input.model.id,
+        fallback: cfg.fallback_model,
+        error,
+      })
+
+      try {
+        const fallbackModel = await Provider.getModel(providerID, modelID)
+
+        return await _stream(
+          {
+            ...input,
+            model: fallbackModel,
+          },
+          cfg,
+        )
+      } catch (fallbackError) {
+        log.error("fallback stream failed", { error: fallbackError })
+        // If fallback fails, throw the original error to indicate the primary failure
+        throw error
+      }
+    }
+  }
+
+  async function _stream(input: StreamInput, cfg: Config.Info) {
     const l = log
       .clone()
       .tag("providerID", input.model.providerID)
@@ -57,9 +102,8 @@ export namespace LLM {
       modelID: input.model.id,
       providerID: input.model.providerID,
     })
-    const [language, cfg, provider, auth] = await Promise.all([
+    const [language, provider, auth] = await Promise.all([
       Provider.getLanguage(input.model),
-      Config.get(),
       Provider.getProvider(input.model.providerID),
       Auth.get(input.model.providerID),
     ])

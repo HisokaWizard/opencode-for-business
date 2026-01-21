@@ -85,12 +85,53 @@ export namespace ModelsDev {
       const json = await data()
       return JSON.parse(json) as Record<string, Provider>
     }
-    const json = await fetch("https://models.dev/api.json").then((x) => x.text())
-    return JSON.parse(json) as Record<string, Provider>
+
+    try {
+      const { NetworkPolicy } = await import("../security/network")
+      if (!(await NetworkPolicy.isAccessAllowed("https://models.dev/api.json"))) {
+        log.info("Network access to models.dev is denied by policy.")
+        return {}
+      }
+    } catch (e) {
+      log.warn("Failed to check network policy", { error: e })
+    }
+
+    try {
+      const json = await fetch("https://models.dev/api.json").then((x) => x.text())
+      return JSON.parse(json) as Record<string, Provider>
+    } catch (e) {
+      log.warn("Failed to fetch models.dev", { error: e })
+      return {}
+    }
   }
 
   export async function refresh() {
     if (Flag.OPENCODE_DISABLE_MODELS_FETCH) return
+
+    try {
+      const { Config } = await import("../config/config")
+      const config = await Config.get()
+      if (config.network?.policy === "deny-all") {
+        log.info("Network access to models.dev is denied by deny-all policy.")
+        return
+      }
+      if (config.network?.policy === "whitelist") {
+        const url = new URL("https://models.dev/api.json")
+        const allowed = config.network.whitelist.some((domain) =>
+          url.hostname === domain || url.hostname.endsWith("." + domain),
+        )
+        if (!allowed) {
+          log.info("Network access to models.dev is not allowed by whitelist policy.", {
+            hostname: url.hostname,
+            whitelist: config.network.whitelist
+          })
+          return
+        }
+      }
+    } catch (e) {
+      log.warn("Failed to check network policy", { error: e })
+    }
+
     const file = Bun.file(filepath)
     log.info("refreshing", {
       file,
@@ -109,4 +150,4 @@ export namespace ModelsDev {
   }
 }
 
-setInterval(() => ModelsDev.refresh(), 60 * 1000 * 60).unref()
+setInterval(() => ModelsDev.refresh().catch(() => {}), 60 * 1000 * 60).unref()

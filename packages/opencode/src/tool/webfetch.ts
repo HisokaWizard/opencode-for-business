@@ -1,4 +1,5 @@
 import z from "zod"
+import { NetworkPolicy } from "../security/network"
 import { Tool } from "./tool"
 import TurndownService from "turndown"
 import DESCRIPTION from "./webfetch.txt"
@@ -22,6 +23,8 @@ export const WebFetchTool = Tool.define("webfetch", {
     if (!params.url.startsWith("http://") && !params.url.startsWith("https://")) {
       throw new Error("URL must start with http:// or https://")
     }
+
+    await NetworkPolicy.checkAccess(params.url)
 
     await ctx.ask({
       permission: "webfetch",

@@ -1,4 +1,5 @@
 import z from "zod"
+import { NetworkPolicy } from "../security/network"
 import { Tool } from "./tool"
 import DESCRIPTION from "./codesearch.txt"
 
@@ -50,6 +51,8 @@ export const CodeSearchTool = Tool.define("codesearch", {
       ),
   }),
   async execute(params, ctx) {
+    await NetworkPolicy.checkAccess(API_CONFIG.BASE_URL)
+
     await ctx.ask({
       permission: "codesearch",
       patterns: [params.query],

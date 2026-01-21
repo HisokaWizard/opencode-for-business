@@ -1,115 +1,145 @@
 <p align="center">
+  <h1 align="center">OpenCode Sentinel</h1>
+</p>
+
+<p align="center">
   <a href="https://opencode.ai">
     <picture>
       <source srcset="packages/console/app/src/asset/logo-ornate-dark.svg" media="(prefers-color-scheme: dark)">
       <source srcset="packages/console/app/src/asset/logo-ornate-light.svg" media="(prefers-color-scheme: light)">
-      <img src="packages/console/app/src/asset/logo-ornate-light.svg" alt="OpenCode logo">
+      <img src="packages/console/app/src/asset/logo-ornate-light.svg" alt="OpenCode logo" width="200">
     </picture>
   </a>
 </p>
-<p align="center">The open source AI coding agent.</p>
+
 <p align="center">
-  <a href="https://opencode.ai/discord"><img alt="Discord" src="https://img.shields.io/discord/1391832426048651334?style=flat-square&label=discord" /></a>
-  <a href="https://www.npmjs.com/package/opencode-ai"><img alt="npm" src="https://img.shields.io/npm/v/opencode-ai?style=flat-square" /></a>
-  <a href="https://github.com/anomalyco/opencode/actions/workflows/publish.yml"><img alt="Build status" src="https://img.shields.io/github/actions/workflow/status/anomalyco/opencode/publish.yml?style=flat-square&branch=dev" /></a>
+  <a href="doc/README.zh-CN.md">简体中文</a> | English
 </p>
 
-[![OpenCode Terminal UI](packages/web/src/assets/lander/screenshot.png)](https://opencode.ai)
+---
+
+## 📖 Introduction
+
+**OpenCode Sentinel** is a **security-enhanced version** of OpenCode, specifically designed for development environments within **corporate intranets** or **offline networks**.
+
+Compared to the original version, it allows you to **connect only to private AI servers**, completely cutting off external network access. This not only ensures that code data absolutely never leaves the intranet but also completely resolves application freezes caused by unstable external network connections.
+
+**Why Choose Sentinel?**
+
+- 📦 **Offline Ready**: Provides a one-click packaging tool that pre-downloads all dependencies, allowing you to simply copy the package to an intranet machine, unzip, and run.
+- 🛡️ **Strict Access Control**: Supports a "whitelist" mode, allowing you to force the application to **only connect to internal AI services**, blocking all other insecure network requests.
+- ⚡ **Zero Lag**: Optimized network connection logic with intelligent timeout and retry mechanisms ensures the interface never freezes due to network jitter.
+- 🏢 **Private Model Support**: Seamlessly integrates with enterprise private deployments of DeepSeek, vLLM, Ollama, and other large model services.
+
+> **Version Info**: Based on [anomalyco/opencode](https://github.com/anomalyco/opencode) v1.1.28 ([commit dac7357](https://github.com/anomalyco/opencode/commit/dac73572e0ecf708d2968bb981e3fe65743dfbda)).
+
+👉 **[View Detailed Changelog](doc/MODIFICATIONS.md)**
+
+## 🚀 Offline Deployment Workflow
+
+This project provides a one-click packaging tool, allowing you to complete deployment in an isolated environment in just three steps.
+
+### 1. Prepare Build Environment
+On a machine with **internet access** (Windows/macOS/Linux), install the basic dependencies:
+- **[Bun](https://bun.sh)**
+- **[Node.js](https://nodejs.org/)**
+- **Clone this repository**
+
+```bash
+git clone https://github.com/oneoflzx/opencode-sentinel.git; cd opencode-sentinel
+```
+
+### 2. Generate Offline Package
+Run the packaging script on the **internet-connected** machine to automatically pull all dependencies and generate a self-contained installation package:
+
+```bash
+bun offline-scripts/pack.ts
+```
+> 🎉 Upon success, an `opencode-offline.tar.gz` file will be generated in the current directory.
+
+### 3. Install in Target Environment
+Transfer `opencode-offline.tar.gz` to the target host and extract it. Run the corresponding installation script based on your operating system (the script automatically configures the Node.js environment and PATH):
+
+| OS | Command | Note |
+| :--- | :--- | :--- |
+| **Linux / macOS** | `./install.sh` | Recommended to run with bash |
+| **Windows** | `.\install.bat` | Or run `install.ps1` with PowerShell |
+
+Directory structure after extraction:
+```text
+dir/
+├── install.sh    # Linux/macOS install script
+├── install.bat   # Windows install script
+├── deps/         # Offline dependencies
+├── bin/          # Executable binaries
+└── node/         # Built-in Node.js environment
+```
 
 ---
 
-### Installation
+## ⚙️ Configuration Guide
 
-```bash
-# YOLO
-curl -fsSL https://opencode.ai/install | bash
+Before the first run, configure security policies and model access in `~/.config/opencode/opencode.json`.
 
-# Package managers
-npm i -g opencode-ai@latest        # or bun/pnpm/yarn
-scoop install opencode             # Windows
-choco install opencode             # Windows
-brew install anomalyco/tap/opencode # macOS and Linux (recommended, always up to date)
-brew install opencode              # macOS and Linux (official brew formula, updated less)
-paru -S opencode-bin               # Arch Linux
-mise use -g opencode               # Any OS
-nix run nixpkgs#opencode           # or github:anomalyco/opencode for latest dev branch
+### Core Configuration Example
+
+```json
+{
+  "$schema": "https://opencode.ai/config.json",
+  "network": {
+    "policy": "whitelist",
+    "whitelist": [
+      "my-private-llm.com"
+    ]
+  },
+  "provider": {
+    "my_provider": {
+      "options": {
+        "baseURL": "https://my-private-llm.com/v1",
+        "apiKey": "sk-private-key"
+      },
+      "models": {
+        "qwen3-32b": { "name": "Qwen3-32B" }
+      }
+    }
+  }
+}
 ```
 
-> [!TIP]
-> Remove versions older than 0.1.x before installing.
+### Configuration Options
 
-### Desktop App (BETA)
+#### Network Policy (`network`)
+- **`policy`**:
+  - `allow-all`: Allow all outbound connections (not recommended for sensitive environments).
+  - `deny-all`: Deny all outbound connections.
+  - `whitelist`: **Recommended**. Only allow access to domains in the whitelist.
+- **`whitelist`**: Array of domain strings, supporting exact matches and subdomain matches.
 
-OpenCode is also available as a desktop application. Download directly from the [releases page](https://github.com/anomalyco/opencode/releases) or [opencode.ai/download](https://opencode.ai/download).
-
-| Platform              | Download                              |
-| --------------------- | ------------------------------------- |
-| macOS (Apple Silicon) | `opencode-desktop-darwin-aarch64.dmg` |
-| macOS (Intel)         | `opencode-desktop-darwin-x64.dmg`     |
-| Windows               | `opencode-desktop-windows-x64.exe`    |
-| Linux                 | `.deb`, `.rpm`, or AppImage           |
-
-```bash
-# macOS (Homebrew)
-brew install --cask opencode-desktop
-# Windows (Scoop)
-scoop bucket add extras; scoop install extras/opencode-desktop
-```
-
-#### Installation Directory
-
-The install script respects the following priority order for the installation path:
-
-1. `$OPENCODE_INSTALL_DIR` - Custom installation directory
-2. `$XDG_BIN_DIR` - XDG Base Directory Specification compliant path
-3. `$HOME/bin` - Standard user binary directory (if exists or can be created)
-4. `$HOME/.opencode/bin` - Default fallback
-
-```bash
-# Examples
-OPENCODE_INSTALL_DIR=/usr/local/bin curl -fsSL https://opencode.ai/install | bash
-XDG_BIN_DIR=$HOME/.local/bin curl -fsSL https://opencode.ai/install | bash
-```
-
-### Agents
-
-OpenCode includes two built-in agents you can switch between with the `Tab` key.
-
-- **build** - Default, full access agent for development work
-- **plan** - Read-only agent for analysis and code exploration
-  - Denies file edits by default
-  - Asks permission before running bash commands
-  - Ideal for exploring unfamiliar codebases or planning changes
-
-Also, included is a **general** subagent for complex searches and multistep tasks.
-This is used internally and can be invoked using `@general` in messages.
-
-Learn more about [agents](https://opencode.ai/docs/agents).
-
-### Documentation
-
-For more info on how to configure OpenCode [**head over to our docs**](https://opencode.ai/docs).
-
-### Contributing
-
-If you're interested in contributing to OpenCode, please read our [contributing docs](./CONTRIBUTING.md) before submitting a pull request.
-
-### Building on OpenCode
-
-If you are working on a project that's related to OpenCode and is using "opencode" as a part of its name; for example, "opencode-dashboard" or "opencode-mobile", please add a note to your README to clarify that it is not built by the OpenCode team and is not affiliated with us in any way.
-
-### FAQ
-
-#### How is this different from Claude Code?
-
-It's very similar to Claude Code in terms of capability. Here are the key differences:
-
-- 100% open source
-- Not coupled to any provider. Although we recommend the models we provide through [OpenCode Zen](https://opencode.ai/zen); OpenCode can be used with Claude, OpenAI, Google or even local models. As models evolve the gaps between them will close and pricing will drop so being provider-agnostic is important.
-- Out of the box LSP support
-- A focus on TUI. OpenCode is built by neovim users and the creators of [terminal.shop](https://terminal.shop); we are going to push the limits of what's possible in the terminal.
-- A client/server architecture. This for example can allow OpenCode to run on your computer, while you can drive it remotely from a mobile app. Meaning that the TUI frontend is just one of the possible clients.
+#### Model Provider (`provider`)
+Follows the standard OpenCode configuration format.
 
 ---
 
-**Join our community** [Discord](https://discord.gg/opencode) | [X.com](https://x.com/opencode)
+## ▶️ Run
+
+After installation and configuration, start the application directly:
+
+```bash
+# Ensure environment variables are loaded (or restart terminal)
+opencode
+```
+
+<p align="center">
+  <img src="doc/OpenCode-Sentinel.png" alt="OpenCode Sentinel Screenshot" width="800">
+</p>
+
+## 📚 Documentation
+
+- **Modifications**: See [MODIFICATIONS.md](doc/MODIFICATIONS.md) for detailed code changes.
+- **Original Docs**: Visit [opencode.ai/docs](https://opencode.ai/docs).
+
+---
+
+<p align="center">
+  <i>Built with ❤️ for the open source community.</i>
+</p>
