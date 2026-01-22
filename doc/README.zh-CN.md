@@ -55,7 +55,7 @@ git clone https://github.com/oneoflzx/opencode-sentinel.git; cd opencode-sentine
 ```bash
 bun offline-scripts/pack.ts
 ```
-> 🎉 构建成功后，当前目录下将生成 `opencode-offline.tar.gz` 文件。
+> 🎉 构建成功后，`offline-scripts/` 目录下将生成 `opencode-offline.tar.gz` 文件。
 
 ### 3. 目标环境安装
 将 `opencode-offline.tar.gz` 传输至目标主机并解压。根据操作系统运行对应的安装脚本（脚本会自动配置 Node.js 环境及 PATH）：

@@ -55,7 +55,7 @@ Run the packaging script on the **internet-connected** machine to automatically 
 ```bash
 bun offline-scripts/pack.ts
 ```
-> 🎉 Upon success, an `opencode-offline.tar.gz` file will be generated in the current directory.
+> 🎉 Upon success, an `opencode-offline.tar.gz` file will be generated in `offline-scripts/` directory.
 
 ### 3. Install in Target Environment
 Transfer `opencode-offline.tar.gz` to the target host and extract it. Run the corresponding installation script based on your operating system (the script automatically configures the Node.js environment and PATH):
