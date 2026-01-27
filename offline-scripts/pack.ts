@@ -106,8 +106,12 @@ async function main() {
   };
   fs.writeFileSync(path.join(BUNDLE_DIR, "deps", "package.json"), JSON.stringify(depsPkg, null, 2));
 
+  // Create a clean .npmrc to avoid user config issues (e.g. broken proxy settings)
+  fs.writeFileSync(path.join(BUNDLE_DIR, "deps", ".npmrc"), "registry=https://registry.npmjs.org/\n");
+
   // Install deps using npm (so we get a standard node_modules)
-  await $`cd ${path.join(BUNDLE_DIR, "deps")} && npm install --no-bin-links --ignore-scripts --no-audit --no-fund --omit=dev`;
+  // Use --userconfig to ignore the user's ~/.npmrc which might have invalid proxy settings
+  await $`cd ${path.join(BUNDLE_DIR, "deps")} && npm --userconfig=.npmrc install --no-bin-links --ignore-scripts --no-audit --no-fund --omit=dev`;
 
   // 5. Copy Install Scripts (We will create them next)
   // Assuming they exist in offline-scripts/
