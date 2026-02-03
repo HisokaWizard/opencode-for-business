@@ -82,6 +82,18 @@ if (Test-Path $DestConfigNodeModules) {
 }
 Copy-Item (Join-Path $InstallDir "deps\node_modules") $ConfigDir -Recurse -Force
 
+# Setup Bin Directory (For LSP) - located in APPDATA/opencode/bin on Windows
+Write-Host "Installing LSP servers to bin dir..."
+$BinDir = Join-Path $ConfigDir "bin"
+if (-not (Test-Path $BinDir)) {
+    New-Item -ItemType Directory -Path $BinDir -Force | Out-Null
+}
+$DestBinNodeModules = Join-Path $BinDir "node_modules"
+if (Test-Path $DestBinNodeModules) {
+    Remove-Item $DestBinNodeModules -Recurse -Force
+}
+Copy-Item (Join-Path $InstallDir "deps\node_modules") $BinDir -Recurse -Force
+
 # 4. Setup Environment Variables (User Level)
 Write-Host "Setting up Environment Variables..."
 $NodePath = Join-Path $InstallDir "node"

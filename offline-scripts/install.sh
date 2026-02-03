@@ -98,6 +98,14 @@ echo "Installing plugins to config dir..."
 rm -rf "$CONFIG_DIR/node_modules"
 cp -r "$INSTALL_DIR/deps/node_modules" "$CONFIG_DIR/"
 
+# Setup Bin Directory (For LSP)
+echo "Setting up Bin Directory..."
+BIN_DIR="$DATA_DIR/bin"
+mkdir -p "$BIN_DIR"
+echo "Installing LSP servers to bin dir..."
+rm -rf "$BIN_DIR/node_modules"
+cp -r "$INSTALL_DIR/deps/node_modules" "$BIN_DIR/"
+
 # 4. Setup Environment Variables
 echo "Setting up Environment Variables..."
 

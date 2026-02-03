@@ -101,7 +101,8 @@ async function main() {
         "@opencode-ai/plugin": "1.1.25",
         "opencode-anthropic-auth": "0.0.9",
         "@openauthjs/openauth": "0.4.3",
-        "@gitlab/opencode-gitlab-auth": "1.3.0"
+        "@gitlab/opencode-gitlab-auth": "1.3.0",
+        "pyright": "latest"
     }
   };
   fs.writeFileSync(path.join(BUNDLE_DIR, "deps", "package.json"), JSON.stringify(depsPkg, null, 2));
