@@ -1653,6 +1653,10 @@ export type Config = {
    */
   model?: string
   /**
+   * Model to use when the primary model fails
+   */
+  fallback_model?: string
+  /**
    * Small model to use for tasks like title generation in the format of provider/model
    */
   small_model?: string
@@ -1747,6 +1751,23 @@ export type Config = {
      * Enterprise URL
      */
     url?: string
+  }
+  /**
+   * Network configuration and security policies
+   */
+  network?: {
+    /**
+     * Network access policy
+     */
+    policy?: "allow-all" | "deny-all" | "whitelist"
+    /**
+     * List of allowed domains for whitelist policy
+     */
+    whitelist?: Array<string>
+    /**
+     * Proxy URL for network requests
+     */
+    proxy?: string
   }
   compaction?: {
     /**

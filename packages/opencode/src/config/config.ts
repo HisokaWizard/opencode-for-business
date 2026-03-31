@@ -1037,14 +1037,13 @@ export namespace Config {
           url: z.string().optional().describe("Enterprise URL"),
         })
         .optional(),
-      fallback_model: z.string().optional().describe("Model to use when the primary model fails"),
       network: z
         .object({
           policy: z.enum(["allow-all", "deny-all", "whitelist"]).default("deny-all").describe("Network access policy"),
           whitelist: z.array(z.string()).default([]).describe("List of allowed domains for whitelist policy"),
           proxy: z.string().optional().describe("Proxy URL for network requests"),
         })
-        .default({})
+        .optional()
         .describe("Network configuration and security policies"),
       compaction: z
         .object({

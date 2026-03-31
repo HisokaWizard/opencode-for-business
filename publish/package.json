@@ -1,0 +1,27 @@
+{
+  "name": "opencode-sentinel-cli",
+  "version": "1.0.1",
+  "description": "AI-powered development tool",
+  "type": "module",
+  "license": "MIT",
+  "bin": {
+    "opencode": "./bin/opencode.cjs"
+  },
+  "main": "./bin/opencode.cjs",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anomalyco/opencode"
+  },
+  "bugs": {
+    "url": "https://github.com/anomalyco/opencode/issues"
+  },
+  "homepage": "https://opencode.ai",
+  "os": [
+    "darwin",
+    "linux",
+    "win32"
+  ],
+  "cpu": [
+    "x64"
+  ]
+}
